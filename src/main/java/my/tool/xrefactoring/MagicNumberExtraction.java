@@ -1,4 +1,4 @@
-package my.tool.automatedidea;
+package my.tool.xrefactoring;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;

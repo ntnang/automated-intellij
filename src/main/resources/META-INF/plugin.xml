@@ -1,11 +1,11 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>my.tool.automated-idea</id>
+    <id>my.tool.xrefactoring</id>
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Automated IDEA</name>
+    <name>XRefactoring</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="nang.john.nguyen@gmail.com" url="https://www.jetbrains.com">Nang Nguyen</vendor>
@@ -14,7 +14,17 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    A plugin for improving the productivity when using Intellij IDEA, including: Magic Number Extraction, ...
+<p>XRefactoring</p>
+
+<p>XRefactoring is a plugin that helps you refactor your code by replacing magic numbers with named constants,... (there are more to come) Magic numbers are literal values that appear directly in the code, such as 3.14, 42, or 100. They can make the code hard to read, understand, and maintain, as they often have no clear meaning or purpose. By extracting magic numbers into named constants, you can improve the readability, clarity, and quality of your code.</p>
+
+<p>With this plugin, you can:<br/>
+<ul>
+<li>•  Extract magic numbers into constants using a refactoring action. The plugin will replace all occurrences of the magic numbers with the constants. This will be very helpful when there are a lot of magic numbers to be extracted.</li>
+</ul>
+</p>
+
+<p>XRefactoring is a useful plugin for developers who want to follow the best practices of clean code and avoid using magic numbers in their code. You can download and install the plugin from the <a href="https://plugins.jetbrains.com/plugin/23125-xrefactoring">JetBrains Marketplace</a> or the <a href="https://github.com/ntnang/xrefactoring.git">GitHub repository</a></p>
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -28,9 +38,9 @@
     </extensions>
 
     <actions>
-        <action id="my.tool.automatedidea.MagicNumberExtraction" class="my.tool.automatedidea.MagicNumberExtraction"
+        <action id="my.tool.xrefactoring.MagicNumberExtraction" class="my.tool.xrefactoring.MagicNumberExtraction"
                 text="Action Basics Plugin: Magic Number Extraction" description="Magic number extraction"
-                icon="my.tool.automatedidea.icons.SdkIcons.Sdk_default_icon">
+                icon="my.tool.xrefactoring.icons.SdkIcons.Sdk_default_icon">
             <add-to-group group-id="RefactoringMenu" anchor="first" />
             <override-text place="MainMenu" text="Magic Number Extraction"/>
         </action>

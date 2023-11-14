@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "automated-intellij"
+rootProject.name = "xrefactoring"
