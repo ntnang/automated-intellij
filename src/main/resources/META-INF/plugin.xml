@@ -20,7 +20,7 @@
 
 <p>With this plugin, you can:<br/>
 <ul>
-<li>•  Extract magic numbers into constants using a refactoring action. The plugin will replace all occurrences of the magic numbers with the constants. This will be very helpful when there are a lot of magic numbers to be extracted.</li>
+<li>Extract magic numbers into constants using a refactoring action. The plugin will replace all occurrences of the magic numbers with the constants. This will be very helpful when there are a lot of magic numbers to be extracted.</li>
 </ul>
 </p>
 
