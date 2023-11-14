@@ -1,4 +1,4 @@
-package com.example.automatedintellij;
+package my.tool.automatedidea;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;

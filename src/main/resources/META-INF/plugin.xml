@@ -1,14 +1,14 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.example.automated-intellij</id>
+    <id>my.tool.automated-idea</id>
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Automated-intellij</name>
+    <name>Automated IDEA</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="neo.nguyen@gmail.com" url="https://www.jetbrains.com">Neo Nguyen</vendor>
+    <vendor email="nang.john.nguyen@gmail.com" url="https://www.jetbrains.com">Nang Nguyen</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
@@ -28,9 +28,9 @@
     </extensions>
 
     <actions>
-        <action id="com.example.automatedintellij.MagicNumberExtraction" class="com.example.automatedintellij.MagicNumberExtraction"
+        <action id="my.tool.automatedidea.MagicNumberExtraction" class="my.tool.automatedidea.MagicNumberExtraction"
                 text="Action Basics Plugin: Magic Number Extraction" description="Magic number extraction"
-                icon="com.example.automatedintellij.icons.SdkIcons.Sdk_default_icon">
+                icon="my.tool.automatedidea.icons.SdkIcons.Sdk_default_icon">
             <add-to-group group-id="RefactoringMenu" anchor="first" />
             <override-text place="MainMenu" text="Magic Number Extraction"/>
         </action>
