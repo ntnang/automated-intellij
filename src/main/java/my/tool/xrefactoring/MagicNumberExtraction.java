@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.NotNull;
@@ -100,9 +101,13 @@ public class MagicNumberExtraction extends AnAction {
             }
         }
 
-        editor.getDocument().setText(modifiedContent);
+        String finalModifiedContent = modifiedContent;
+        WriteCommandAction.runWriteCommandAction(e.getProject(), () -> {
+            editor.getDocument().setText(finalModifiedContent);
+        });
         String resultOutputMessage = resultOutputMessageBuilder.isEmpty() ? "No magic number found!" : resultOutputMessageBuilder.insert(0, "Extracted: ").toString();
         Messages.showMessageDialog(resultOutputMessage, MESSAGE_BOX_TITLE, Messages.getInformationIcon());
+
     }
 
     private static boolean isNotAMagicNumber(char prefixCharacter, char suffixCharacter) {
