@@ -9,10 +9,12 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class MagicNumberExtraction extends AnAction {
 
@@ -31,7 +33,7 @@ public class MagicNumberExtraction extends AnAction {
         List<Declaration> declarations = new ArrayList<>();
         List<Comment> comments = new ArrayList<>();
 
-        Pattern numberPattern = Pattern.compile("\\d+");
+        Pattern numberPattern = Pattern.compile("\\d+\\.?\\d*[d|f|l]?");
         Matcher numberMatcher = numberPattern.matcher(editor.getDocument().getText());
         int firstOpenCurlyBracketPosition = editor.getDocument().getText().indexOf('{');
         StringBuilder resultOutputMessageBuilder = new StringBuilder();
@@ -50,15 +52,15 @@ public class MagicNumberExtraction extends AnAction {
                 comments.add(new Comment(commentBlockMatcher.start(), commentBlockMatcher.end()));
             }
 
-            Matcher declarationMatcher = Pattern.compile("\\w+\\s*=\\s*\\d+\\.?\\d*[f|l]?;").matcher(modifiedContent);
+            Matcher declarationMatcher = Pattern.compile("\\w+\\s*=\\s*\\d+\\.?\\d*[d|f|l]?;").matcher(modifiedContent);
             while (declarationMatcher.find()) {
-                List<String> declarationParts = Arrays.stream(declarationMatcher.group().trim().split("=")).collect(Collectors.toList());
+                List<String> declarationParts = Arrays.stream(declarationMatcher.group().trim().split("=")).toList();
                 declarations.add(new Declaration(declarationParts.get(0), declarationParts.get(1), declarationMatcher.start(), declarationMatcher.end()));
             }
 
             String number = numberMatcher.group();
-            String constantName = "MAGIC_NUMBER_" + number;
-            String constantDeclaration = "private static final int %s = %s;".formatted(constantName, number);
+            String constantName = "MAGIC_NUMBER_" + number.replace('.', '_');
+            String constantDeclaration = "private static final %s %s = %s;".formatted(getConstantType(number), constantName, number);
 
             int numberStartPosition = numberMatcher.start();
             int numberEndPosition = numberMatcher.end();
@@ -102,12 +104,20 @@ public class MagicNumberExtraction extends AnAction {
         }
 
         String finalModifiedContent = modifiedContent;
-        WriteCommandAction.runWriteCommandAction(e.getProject(), () -> {
-            editor.getDocument().setText(finalModifiedContent);
-        });
+        WriteCommandAction.runWriteCommandAction(e.getProject(), () -> editor.getDocument().setText(finalModifiedContent));
         String resultOutputMessage = resultOutputMessageBuilder.isEmpty() ? "No magic number found!" : resultOutputMessageBuilder.insert(0, "Extracted: ").toString();
         Messages.showMessageDialog(resultOutputMessage, MESSAGE_BOX_TITLE, Messages.getInformationIcon());
 
+    }
+
+    @NotNull
+    private static String getConstantType(String number) {
+        return switch (number.charAt(number.length() - 1)) {
+            case 'd' -> "double";
+            case 'f' -> "float";
+            case 'l' -> "long";
+            default -> number.contains(".") ? "double" : "int";
+        };
     }
 
     private static boolean isNotAMagicNumber(char prefixCharacter, char suffixCharacter) {
@@ -122,10 +132,6 @@ public class MagicNumberExtraction extends AnAction {
 
         private int startPosition;
         private int endPosition;
-
-        private Comment() {
-            throw new UnsupportedOperationException();
-        }
 
         Comment(int startPosition, int endPosition) {
             this.startPosition = startPosition;
@@ -142,10 +148,6 @@ public class MagicNumberExtraction extends AnAction {
         private String value;
         private int startPosition;
         private int endPosition;
-
-        private Declaration() {
-            throw new UnsupportedOperationException();
-        }
 
         Declaration(String name, String number, int startPosition, int endPosition) {
             this.name = name;
