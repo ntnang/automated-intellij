@@ -14,8 +14,6 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-<p>XRefactoring</p>
-
 <p>XRefactoring is a plugin that helps you refactor your code by replacing magic numbers with named constants,... (there are more to come) Magic numbers are literal values that appear directly in the code, such as 3.14, 42, or 100. They can make the code hard to read, understand, and maintain, as they often have no clear meaning or purpose. By extracting magic numbers into named constants, you can improve the readability, clarity, and quality of your code.</p>
 
 <p>With this plugin, you can:<br/>

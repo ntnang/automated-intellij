@@ -9,16 +9,15 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MagicNumberExtraction extends AnAction {
 
     private static final String MESSAGE_BOX_TITLE = "Message";
+    private static final List<Class<?>> declaredTypes = List.of(int.class, long.class, float.class, double.class, Integer.class, Long.class, Float.class, Double.class);
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
@@ -30,7 +29,7 @@ public class MagicNumberExtraction extends AnAction {
             return;
         }
 
-        List<Declaration> declarations = new ArrayList<>();
+        Set<Declaration> declarations = new HashSet<>();
         List<Comment> comments = new ArrayList<>();
 
         Pattern numberPattern = Pattern.compile("\\d+\\.?\\d*[d|f|l]?");
@@ -52,15 +51,20 @@ public class MagicNumberExtraction extends AnAction {
                 comments.add(new Comment(commentBlockMatcher.start(), commentBlockMatcher.end()));
             }
 
-            Matcher declarationMatcher = Pattern.compile("\\w+\\s*=\\s*\\d+\\.?\\d*[d|f|l]?;").matcher(modifiedContent);
+            String allTypes = declaredTypes.stream().map(Class::getSimpleName).map("(%s)"::formatted).collect(Collectors.joining("|"));
+            Matcher declarationMatcher = Pattern.compile("(%s)\\s+\\w+\\s*=\\s*\\d+\\.?\\d*[d|f|l]?;".formatted(allTypes)).matcher(modifiedContent);
             while (declarationMatcher.find()) {
-                List<String> declarationParts = Arrays.stream(declarationMatcher.group().trim().split("=")).toList();
-                declarations.add(new Declaration(declarationParts.get(0), declarationParts.get(1), declarationMatcher.start(), declarationMatcher.end()));
+                String declaration = declarationMatcher.group();
+                int firstSpacePosition = declaration.indexOf(' ');
+                String declaredType = declaration.substring(0, firstSpacePosition);
+                List<String> declarationParts = Arrays.stream(declaration.substring(firstSpacePosition + 1).replaceAll("\\s|\\;", "").split("=")).toList();
+                declarations.add(new Declaration(declarationParts.get(0), declarationParts.get(1), declaredType, declarationMatcher.start(), declarationMatcher.end()));
             }
 
             String number = numberMatcher.group();
             String constantName = "MAGIC_NUMBER_" + number.replace('.', '_');
-            String constantDeclaration = "private static final %s %s = %s;".formatted(getConstantType(number), constantName, number);
+            String constantType = getConstantType(number);
+            String constantDeclaration = "private static final %s %s = %s;".formatted(constantType, constantName, number);
 
             int numberStartPosition = numberMatcher.start();
             int numberEndPosition = numberMatcher.end();
@@ -81,7 +85,7 @@ public class MagicNumberExtraction extends AnAction {
 
                 Matcher constantDeclarationMatcher = Pattern.compile(constantDeclaration).matcher(modifiedContent);
                 if (constantDeclarationMatcher.find()) {
-                    declarations.add(new Declaration(constantName, number, constantDeclarationMatcher.start(), constantDeclarationMatcher.end()));
+                    declarations.add(new Declaration(constantName, number, constantType, constantDeclarationMatcher.start(), constantDeclarationMatcher.end()));
                 }
                 numberStartPosition += constantDeclaration.length() + 2;
                 numberEndPosition += constantDeclaration.length() + 2;
@@ -89,7 +93,7 @@ public class MagicNumberExtraction extends AnAction {
             modifiedContent = new StringBuilder(modifiedContent).replace(numberStartPosition, numberEndPosition, constantName).toString();
 
             for (Declaration constant : declarations) {
-                Matcher matcher = Pattern.compile("private static final int %s = (\\d)+;".formatted(constant.name)).matcher(modifiedContent);
+                Matcher matcher = Pattern.compile("private static final %s %s = %s;".formatted(constant.type, constant.name, constant.value)).matcher(modifiedContent);
                 if (matcher.find()) {
                     constant.startPosition = matcher.start();
                     constant.endPosition = matcher.end();
@@ -146,12 +150,14 @@ public class MagicNumberExtraction extends AnAction {
     class Declaration {
         private String name;
         private String value;
+        private String type;
         private int startPosition;
         private int endPosition;
 
-        Declaration(String name, String number, int startPosition, int endPosition) {
+        Declaration(String name, String number, String type, int startPosition, int endPosition) {
             this.name = name;
             this.value = number;
+            this.type = type;
             this.startPosition = startPosition;
             this.endPosition = endPosition;
         }
@@ -164,6 +170,18 @@ public class MagicNumberExtraction extends AnAction {
             return this.name;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Declaration that = (Declaration) o;
+            return Objects.equals(name, that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
     }
 
 }
