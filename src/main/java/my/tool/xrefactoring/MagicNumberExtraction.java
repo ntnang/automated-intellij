@@ -93,7 +93,7 @@ public class MagicNumberExtraction extends AnAction {
             modifiedContent = new StringBuilder(modifiedContent).replace(numberStartPosition, numberEndPosition, constantName).toString();
 
             for (Declaration constant : declarations) {
-                Matcher matcher = Pattern.compile("private static final %s %s = %s;".formatted(constant.type, constant.name, constant.value)).matcher(modifiedContent);
+                Matcher matcher = Pattern.compile("%s\\s+%s\\s*=\\s*%s;".formatted(constant.type, constant.name, constant.value)).matcher(modifiedContent);
                 if (matcher.find()) {
                     constant.startPosition = matcher.start();
                     constant.endPosition = matcher.end();
