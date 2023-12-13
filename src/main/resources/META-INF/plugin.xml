@@ -39,8 +39,8 @@
         <action id="my.tool.xrefactoring.MagicNumberExtraction" class="my.tool.xrefactoring.MagicNumberExtraction"
                 text="Action Basics Plugin: Magic Number Extraction" description="Magic number extraction"
                 icon="my.tool.xrefactoring.icons.SdkIcons.Sdk_default_icon">
-            <add-to-group group-id="RefactoringMenu" anchor="first" />
-            <override-text place="MainMenu" text="Magic Number Extraction"/>
+            <add-to-group group-id="IntroduceActionsGroup" anchor="first" />
+            <override-text place="MainMenu" text="Magic Numbers"/>
         </action>
     </actions>
 </idea-plugin>
