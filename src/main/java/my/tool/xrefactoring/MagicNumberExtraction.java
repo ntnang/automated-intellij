@@ -51,7 +51,7 @@ public class MagicNumberExtraction extends AnAction {
                 comments.add(new Comment(commentBlockMatcher.start(), commentBlockMatcher.end()));
             }
 
-            String allTypes = declaredTypes.stream().map(Class::getSimpleName).map("(%s)"::formatted).collect(Collectors.joining("|"));
+            String allTypes = declaredTypes.stream().map(Class::getSimpleName).map("(%s)"::formatted).collect(Collectors.joining("|", "(var)|", ""));
             Matcher declarationMatcher = Pattern.compile("(%s)\\s+\\w+\\s*=\\s*\\d+\\.?\\d*[d|f|l]?;".formatted(allTypes)).matcher(modifiedContent);
             while (declarationMatcher.find()) {
                 String declaration = declarationMatcher.group();
