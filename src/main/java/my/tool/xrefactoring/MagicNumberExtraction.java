@@ -7,6 +7,8 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -18,6 +20,8 @@ public class MagicNumberExtraction extends AnAction {
 
     private static final String MESSAGE_BOX_TITLE = "Message";
     private static final List<Class<?>> declaredTypes = List.of(int.class, long.class, float.class, double.class, Integer.class, Long.class, Float.class, Double.class);
+    private static final String JAVA = "java";
+    private static final String VIRTUAL_FILE = "virtualFile";
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
@@ -31,6 +35,7 @@ public class MagicNumberExtraction extends AnAction {
 
         Set<Declaration> declarations = new HashSet<>();
         List<Comment> comments = new ArrayList<>();
+        List<DeclaredString> declaredStrings = new ArrayList<>();
 
         Pattern numberPattern = Pattern.compile("\\d+\\.?\\d*[d|f|l]?");
         Matcher numberMatcher = numberPattern.matcher(editor.getDocument().getText());
@@ -40,6 +45,7 @@ public class MagicNumberExtraction extends AnAction {
 
         while (numberMatcher.find()) {
             comments.clear();
+            declaredStrings.clear();
 
             Matcher commentLineMatcher = Pattern.compile("\\/\\/.*").matcher(modifiedContent);
             while (commentLineMatcher.find()) {
@@ -49,6 +55,11 @@ public class MagicNumberExtraction extends AnAction {
             Matcher commentBlockMatcher = Pattern.compile("\\/\\*[^\\/]*\\*\\/").matcher(modifiedContent);
             while (commentBlockMatcher.find()) {
                 comments.add(new Comment(commentBlockMatcher.start(), commentBlockMatcher.end()));
+            }
+
+            Matcher declaredString = Pattern.compile("\".*\"").matcher(modifiedContent);
+            while (declaredString.find()) {
+                declaredStrings.add(new DeclaredString(declaredString.start(), declaredString.end()));
             }
 
             String allTypes = declaredTypes.stream().map(Class::getSimpleName).map("(%s)"::formatted).collect(Collectors.joining("|", "(var)|", ""));
@@ -76,7 +87,8 @@ public class MagicNumberExtraction extends AnAction {
             int finalNumberEndPosition = numberEndPosition;
             if (isNotAMagicNumber(prefixCharacter, suffixCharacter)
                     || comments.stream().anyMatch(comment -> comment.surrounds(finalNumberStartPosition, finalNumberEndPosition))
-                    || declarations.stream().anyMatch(constant -> constant.surrounds(finalNumberStartPosition, finalNumberEndPosition))) {
+                    || declarations.stream().anyMatch(constant -> constant.surrounds(finalNumberStartPosition, finalNumberEndPosition))
+                    || declaredStrings.stream().anyMatch(string -> string.surrounds(finalNumberStartPosition, finalNumberEndPosition))) {
                 continue;
             }
 
@@ -114,6 +126,14 @@ public class MagicNumberExtraction extends AnAction {
 
     }
 
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+        Object virtualFile = e.getDataContext().getData(VIRTUAL_FILE);
+        if (virtualFile instanceof VirtualFile) {
+            e.getPresentation().setVisible(((VirtualFile) virtualFile).getName().endsWith(JAVA));
+        }
+    }
+
     @NotNull
     private static String getConstantType(String number) {
         return switch (number.charAt(number.length() - 1)) {
@@ -138,6 +158,20 @@ public class MagicNumberExtraction extends AnAction {
         private int endPosition;
 
         Comment(int startPosition, int endPosition) {
+            this.startPosition = startPosition;
+            this.endPosition = endPosition;
+        }
+
+        boolean surrounds(int startPosition, int endPosition) {
+            return startPosition > this.startPosition && endPosition < this.endPosition;
+        }
+    }
+
+    class DeclaredString {
+        private int startPosition;
+        private int endPosition;
+
+        DeclaredString(int startPosition, int endPosition) {
             this.startPosition = startPosition;
             this.endPosition = endPosition;
         }
